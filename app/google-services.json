@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "907003508963",
+    "project_id": "game-match-pairs",
+    "storage_bucket": "game-match-pairs.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:907003508963:android:14e315c5fe173d559e6dd6",
+        "android_client_info": {
+          "package_name": "com.erastusnzula.game_matchpairs"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "907003508963-0t34vnv42ft5mg0ov7mqoruuc2gr45fl.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAoals5ao2OZFHPNLm6XkV_YCweHfU5CCk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "907003508963-0t34vnv42ft5mg0ov7mqoruuc2gr45fl.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
