@@ -62,7 +62,7 @@ class GameAdapter(
                     imageButton.setImageResource(card.identifier)
                 }
             }else{
-                imageButton.setImageResource(R.drawable.ic_launcher_background)
+                imageButton.setImageResource(R.drawable.background)
             }
 
             imageButton.alpha = if (card.isMatched) 0.4f else 1.0f

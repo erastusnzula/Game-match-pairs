@@ -18,6 +18,6 @@
         app:showAsAction="never" />
     <item
         android:id="@+id/downloadGame"
-        android:title="Download Game"
+        android:title="@string/download_custom_game"
         app:showAsAction="never" />
 </menu>

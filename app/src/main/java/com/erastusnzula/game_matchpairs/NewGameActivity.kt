@@ -31,6 +31,7 @@ import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.ktx.storage
 import java.io.ByteArrayOutputStream
+import kotlin.system.exitProcess
 
 class NewGameActivity : AppCompatActivity() {
     companion object {
@@ -201,11 +202,17 @@ class NewGameActivity : AppCompatActivity() {
         database.collection("Game-match pairs").document(name).get()
             .addOnSuccessListener { document ->
                 if (document != null && document.data != null) {
-                    AlertDialog.Builder(this)
-                        .setTitle("Game Name")
-                        .setMessage("The name: $name is already taken, please choose another.")
-                        .setPositiveButton("Okay", null)
-                        .show()
+                    val checkNameAlert = AlertDialog.Builder(this)
+                    checkNameAlert.setTitle("Name already taken")
+                    checkNameAlert.setCancelable(false)
+                    val options = arrayOf("1. Choose another name")
+                    checkNameAlert.setItems(options) { _, which ->
+                        when (which) {
+                            0 -> {}
+                        }
+                    }
+//                        .setPositiveButton("Okay", null)
+                    checkNameAlert.show()
                     save.isEnabled = true
                 } else {
                     handleUploadingImages(name)
@@ -267,14 +274,27 @@ class NewGameActivity : AppCompatActivity() {
                     Toast.makeText(this, "Game creation failed", Toast.LENGTH_LONG).show()
                     return@addOnCompleteListener
                 } else {
-                    AlertDialog.Builder(this)
-                        .setTitle("The game: $gameName, uploaded successfully. Play game?")
-                        .setPositiveButton("Yes") { _, _ ->
-                            val output = Intent()
-                            output.putExtra(EXTRA_GAME_NAME, gameName)
-                            setResult(Activity.RESULT_OK, output)
-                            finish()
-                        }.show()
+                    val alert = AlertDialog.Builder(this)
+                    alert.setTitle("Game uploaded successfully")
+                    alert.setCancelable(false)
+                    val options = arrayOf("1. Play game")
+                    alert.setItems(options) { _, which ->
+                        when (which) {
+                            0 -> {
+                                val output = Intent()
+                                output.putExtra(EXTRA_GAME_NAME, gameName)
+                                setResult(Activity.RESULT_OK, output)
+                                finish()
+                            }
+                        }
+                    }
+//                    alert.setPositiveButton("Yes") { _, _ ->
+//                        val output = Intent()
+//                        output.putExtra(EXTRA_GAME_NAME, gameName)
+//                        setResult(Activity.RESULT_OK, output)
+//                        finish()
+//                    }
+                    alert.show()
                 }
             }
 

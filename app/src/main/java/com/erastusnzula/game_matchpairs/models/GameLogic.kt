@@ -4,22 +4,18 @@ import com.erastusnzula.game_matchpairs.utils.DEFAULT_ICONS
 
 class GameLogic(private val boardSize: BoardSize, private val customGameImages: List<String>?) {
 
-
-    val imageListDoubled: List<SingleCard>
     var pairsFound = 0
-    private var numberOfFlippedCards = 0
+    var numberOfFlippedCards = 0
     var clickedCardIndex: Int? = null
 
-    init {
-        if (customGameImages == null){
-            val imagesList = DEFAULT_ICONS.shuffled().take(boardSize.getPairs())
-            imageListDoubled = (imagesList + imagesList).shuffled().map { SingleCard(it) }
-        }else{
-            val customImages = (customGameImages+customGameImages).shuffled()
-            imageListDoubled = customImages.map { SingleCard(it.hashCode(), it) }
-        }
-
+    val imageListDoubled: List<SingleCard> = if (customGameImages == null){
+        val imagesList = DEFAULT_ICONS.shuffled().take(boardSize.getPairs())
+        (imagesList + imagesList).shuffled().map { SingleCard(it) }
+    }else{
+        val customImages = (customGameImages+customGameImages).shuffled()
+        customImages.map { SingleCard(it.hashCode(), it) }
     }
+
 
     fun flipCard(position: Int): Boolean {
         numberOfFlippedCards++

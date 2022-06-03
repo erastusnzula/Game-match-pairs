@@ -4,7 +4,7 @@ import android.animation.ArgbEvaluator
 import android.app.Activity
 import android.content.Intent
 import android.graphics.Color
-import android.graphics.Picture
+import android.media.MediaPlayer
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -16,7 +16,6 @@ import android.widget.RadioGroup
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
-import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.GridLayoutManager
@@ -47,6 +46,10 @@ class MainActivity : AppCompatActivity() {
     private lateinit var gameLogic: GameLogic
     private lateinit var adapter: GameAdapter
     private var boardSize: BoardSize = BoardSize.HARD
+    private lateinit var gameOver: MediaPlayer
+    private lateinit var invalidMove: MediaPlayer
+    private var lose = false
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -191,6 +194,7 @@ class MainActivity : AppCompatActivity() {
             .setIcon(R.drawable.ic_baseline_view_module_24)
             .setTitle(title)
             .setView(view)
+            .setCancelable(false)
             .setNegativeButton("No", null)
             .setPositiveButton("Yes") { _, _ ->
                 positiveClick.onClick(null)
@@ -237,7 +241,7 @@ class MainActivity : AppCompatActivity() {
     private fun updateGame(position: Int) {
         when {
             gameLogic.gameOver() -> {
-                val snack=Snackbar.make(
+                val snack = Snackbar.make(
                     constrainedLayout,
                     getString(R.string.game_over),
                     Snackbar.LENGTH_LONG
@@ -247,6 +251,7 @@ class MainActivity : AppCompatActivity() {
                     gameSetup()
                 }
                 snack.show()
+                gameOverSelectAction()
                 return
             }
             gameLogic.cardIsFaceUp(position) -> {
@@ -260,6 +265,9 @@ class MainActivity : AppCompatActivity() {
                     gameSetup()
                 }
                 snack.show()
+                invalidMove = MediaPlayer.create(this, R.raw.failure)
+                invalidMove.setVolume(0f, .2f)
+                invalidMove.start()
                 return
             }
             else -> {
@@ -273,6 +281,9 @@ class MainActivity : AppCompatActivity() {
                     val pairText =
                         getString(R.string.pairs, gameLogic.pairsFound, boardSize.getPairs())
                     pairs.text = pairText
+                    val playSound = MediaPlayer.create(this, R.raw.funny)
+                    playSound.setVolume(0f, .2f)
+                    playSound?.start()
                     if (gameLogic.gameOver()) {
                         CommonConfetti.rainingConfetti(
                             constrainedLayout, intArrayOf(
@@ -304,24 +315,95 @@ class MainActivity : AppCompatActivity() {
                             gameSetup()
                         }
                         snack.show()
+                        gameOverSelectAction()
+                        gameOver = MediaPlayer.create(this, R.raw.ethereal)
+                        gameOver.setVolume(0f, .2f)
+                        gameOver.start()
 
-                        AlertDialog.Builder(this)
-                            .setIcon(R.drawable.ic_dialog)
-                            .setTitle("Game Over")
-                            .setMessage("Congratulations!!Do you want to play again?")
-                            .setNegativeButton("No") { dialog, _ ->
-                                dialog.dismiss()
-                            }
-                            .setPositiveButton("Yes") { _, _ ->
-                                gameSetup()
-                            }.show()
+
                     }
                 }
                 val moveText = getString(R.string.moves, gameLogic.getNumberMoves())
                 moves.text = moveText
+                checkGameMoves()
                 adapter.notifyDataSetChanged()
             }
         }
 
+    }
+
+
+
+    private fun checkGameMoves(): Boolean {
+
+        when (boardSize) {
+            BoardSize.EASY -> {
+                if (gameLogic.getNumberMoves() > 10 && !gameLogic.gameOver()) {
+                    lose = true
+                    showEndGameDialog()
+                }
+            }
+            BoardSize.MEDIUM -> {
+                if (gameLogic.getNumberMoves() > 30 && !gameLogic.gameOver()) {
+                    lose = true
+                    showEndGameDialog()
+                }
+            }
+            BoardSize.HARD -> {
+                if (gameLogic.getNumberMoves() > 50 && !gameLogic.gameOver()) {
+                    lose = true
+                    showEndGameDialog()
+                }
+            }
+            BoardSize.ADVANCED -> {
+                if (gameLogic.getNumberMoves() > 75 && !gameLogic.gameOver()) {
+                    lose = true
+                    showEndGameDialog()
+                }
+            }
+        }
+        return lose
+    }
+    private fun showEndGameDialog() {
+        val alert = AlertDialog.Builder(this)
+        alert.setTitle("Out of moves")
+        val options = arrayOf(
+            "1. Play again",
+            "2. Change game level",
+            "3. Create custom game",
+            "4. Download custom game"
+        )
+        alert.setCancelable(false)
+        alert.setItems(options){_,which->
+            when (which){
+                0->gameSetup()
+                1->showGameSizes()
+                2->createNewGameDialog()
+                3->showCustomGameDownloadDialog()
+            }
+        }
+        alert.show()
+    }
+
+    private fun gameOverSelectAction() {
+        val gameOver = AlertDialog.Builder(this)
+        gameOver.setTitle("Congratulations")
+        gameOver.setIcon(R.drawable.ic_win)
+        val gameOptions = arrayOf(
+            "1. Play Again",
+            "2. Change game level",
+            "3. Download custom game",
+            "4. Create custom game"
+        )
+        gameOver.setItems(gameOptions) { _, which ->
+            when (which) {
+                0 -> gameSetup()
+                1 -> showGameSizes()
+                2 -> showCustomGameDownloadDialog()
+                3 -> createNewGameDialog()
+            }
+        }
+        gameOver.setCancelable(false)
+        gameOver.show()
     }
 }

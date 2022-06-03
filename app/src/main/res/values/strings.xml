@@ -11,9 +11,9 @@
     <string name="advanced_pairs"> Pairs: 0/20</string>
     <string name="advanced_moves"> 8x5</string>
     <string name="game_over">Game over!</string>
-    <string name="invalid_move">Invalid move, card already flipped up.</string>
-    <string name="win">Congratulations, you win!</string>
-    <string name="choose_size">Choose Game Level</string>
+    <string name="invalid_move">Invalid move.</string>
+    <string name="win">Congratulations!</string>
+    <string name="choose_size">Change game Level</string>
     <string name="quit">Quit current game?</string>
     <string name="initialized_moves">Moves : 0</string>
     <string name="initialized_pairs">Pairs : 0/4</string>
@@ -24,10 +24,11 @@
     <string name="dialog_advanced">Advanced (8x5)</string>
     <string name="choose_game_size">Choose game level</string>
     <string name="refresh">refresh</string>
-    <string name="create_new_game">Create new game</string>
+    <string name="create_new_game">Create custom game</string>
     <string name="save">Save</string>
     <string name="game_name_hint">Enter game name in small letters</string>
     <string name="enter_game_name_to_download">Enter game name</string>
     <string name="my_name">Erastus Nzula</string>
+    <string name="download_custom_game">Download custom game</string>
 
 </resources>
