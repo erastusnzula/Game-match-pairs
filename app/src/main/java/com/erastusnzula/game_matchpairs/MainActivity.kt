@@ -26,10 +26,12 @@ import com.erastusnzula.game_matchpairs.models.GameLogic
 import com.erastusnzula.game_matchpairs.utils.EXTRA_BOARD_SIZE
 import com.erastusnzula.game_matchpairs.utils.EXTRA_GAME_NAME
 import com.github.jinatonic.confetti.CommonConfetti
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.squareup.picasso.Picasso
+import kotlin.system.exitProcess
 
 class MainActivity : AppCompatActivity() {
     companion object {
@@ -49,6 +51,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var gameOver: MediaPlayer
     private lateinit var invalidMove: MediaPlayer
     private var lose = false
+    private var backPressDelay: Long = 0
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -60,6 +63,18 @@ class MainActivity : AppCompatActivity() {
         gameSetup()
     }
 
+    override fun onBackPressed() {
+        if (backPressDelay + 3000 > System.currentTimeMillis()) {
+            super.onBackPressed()
+            finish()
+        } else {
+            Snackbar.make(constrainedLayout, "Press back again to exit", Toast.LENGTH_SHORT).show()
+
+        }
+        backPressDelay = System.currentTimeMillis()
+
+    }
+
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.main_menu, menu)
         return true
@@ -69,9 +84,16 @@ class MainActivity : AppCompatActivity() {
         when (item.itemId) {
             R.id.refresh -> {
                 if (gameLogic.getNumberMoves() > 0 && gameLogic.pairsFound > 0 && !gameLogic.gameOver()) {
-                    showAlertDialog(getString(R.string.quit), null) {
+                    val alert = MaterialAlertDialogBuilder(this, R.style.ThemeOverlay_MaterialComponents_MaterialAlertDialog_Background)
+                    alert.setTitle("Quit current game?")
+                    alert.setCancelable(false)
+                    alert.setNegativeButton("No"){dialog,_->
+                        dialog.dismiss()
+                    }
+                    alert.setPositiveButton("Yes"){_,_->
                         gameSetup()
                     }
+                    alert.show()
                 } else {
                     gameSetup()
                 }
@@ -109,12 +131,30 @@ class MainActivity : AppCompatActivity() {
 
     private fun showCustomGameDownloadDialog() {
         val boardDownloadView = LayoutInflater.from(this).inflate(R.layout.download_game, null)
-        showAlertDialog("Download Game", boardDownloadView, View.OnClickListener {
+        showAlertDialog("Download Game", boardDownloadView) {
             val gameToDownload = boardDownloadView.findViewById<EditText>(R.id.entergametodownload)
             val download = gameToDownload.text.toString().trim()
-            downloadNewGame(download)
+            if (download.isNotBlank()) {
+                downloadNewGame(download)
+            } else {
+                blankCustomGameNameDialog()
+            }
+        }
+    }
 
-        })
+    private fun blankCustomGameNameDialog() {
+        val alert = AlertDialog.Builder(this)
+        alert.setTitle("Game name can't be blank")
+        val options= arrayOf("1. Enter game name","2. Play default game")
+        alert.setCancelable(false)
+        alert.setItems(options){dialog,which->
+            when(which){
+                0->showCustomGameDownloadDialog()
+                1->gameSetup()
+            }
+        }
+        alert.show()
+
     }
 
     private fun downloadNewGame(name: String) {
@@ -190,15 +230,18 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showAlertDialog(title: String, view: View?, positiveClick: View.OnClickListener) {
-        AlertDialog.Builder(this)
+        MaterialAlertDialogBuilder(this, R.style.ThemeOverlay_MaterialComponents_MaterialAlertDialog_Background)
             .setIcon(R.drawable.ic_baseline_view_module_24)
             .setTitle(title)
             .setView(view)
             .setCancelable(false)
-            .setNegativeButton("No", null)
+            .setNegativeButton("No") { _, _ ->
+                gameSetup()
+            }
             .setPositiveButton("Yes") { _, _ ->
                 positiveClick.onClick(null)
             }.show()
+
     }
 
     private fun gameSetup() {
@@ -333,7 +376,6 @@ class MainActivity : AppCompatActivity() {
     }
 
 
-
     private fun checkGameMoves(): Boolean {
 
         when (boardSize) {
@@ -344,19 +386,19 @@ class MainActivity : AppCompatActivity() {
                 }
             }
             BoardSize.MEDIUM -> {
-                if (gameLogic.getNumberMoves() > 30 && !gameLogic.gameOver()) {
+                if (gameLogic.getNumberMoves() > 25 && !gameLogic.gameOver()) {
                     lose = true
                     showEndGameDialog()
                 }
             }
             BoardSize.HARD -> {
-                if (gameLogic.getNumberMoves() > 50 && !gameLogic.gameOver()) {
+                if (gameLogic.getNumberMoves() > 30 && !gameLogic.gameOver()) {
                     lose = true
                     showEndGameDialog()
                 }
             }
             BoardSize.ADVANCED -> {
-                if (gameLogic.getNumberMoves() > 75 && !gameLogic.gameOver()) {
+                if (gameLogic.getNumberMoves() > 55 && !gameLogic.gameOver()) {
                     lose = true
                     showEndGameDialog()
                 }
@@ -364,6 +406,7 @@ class MainActivity : AppCompatActivity() {
         }
         return lose
     }
+
     private fun showEndGameDialog() {
         val alert = AlertDialog.Builder(this)
         alert.setTitle("Out of moves")
@@ -371,15 +414,18 @@ class MainActivity : AppCompatActivity() {
             "1. Play again",
             "2. Change game level",
             "3. Create custom game",
-            "4. Download custom game"
+            "4. Download custom game",
+            "5. Exit"
+
         )
         alert.setCancelable(false)
-        alert.setItems(options){_,which->
-            when (which){
-                0->gameSetup()
-                1->showGameSizes()
-                2->createNewGameDialog()
-                3->showCustomGameDownloadDialog()
+        alert.setItems(options) { _, which ->
+            when (which) {
+                0 -> gameSetup()
+                1 -> showGameSizes()
+                2 -> createNewGameDialog()
+                3 -> showCustomGameDownloadDialog()
+                4 -> exitProtocol()
             }
         }
         alert.show()
@@ -393,7 +439,8 @@ class MainActivity : AppCompatActivity() {
             "1. Play Again",
             "2. Change game level",
             "3. Download custom game",
-            "4. Create custom game"
+            "4. Create custom game",
+            "5. Exit"
         )
         gameOver.setItems(gameOptions) { _, which ->
             when (which) {
@@ -401,9 +448,25 @@ class MainActivity : AppCompatActivity() {
                 1 -> showGameSizes()
                 2 -> showCustomGameDownloadDialog()
                 3 -> createNewGameDialog()
+                4 -> {
+                    exitProtocol()
+                }
             }
         }
         gameOver.setCancelable(false)
         gameOver.show()
+    }
+
+    private fun exitProtocol() {
+        val alert = MaterialAlertDialogBuilder(this, R.style.ThemeOverlay_MaterialComponents_MaterialAlertDialog_Background)
+        alert.setMessage("Do you want to exit the app?")
+        alert.setNegativeButton("No") { _, _ ->
+            gameSetup()
+        }
+        alert.setPositiveButton("Yes") { _, _ ->
+            finish()
+        }
+        alert.show()
+
     }
 }

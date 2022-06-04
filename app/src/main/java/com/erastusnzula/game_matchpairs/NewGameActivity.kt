@@ -27,6 +27,7 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.erastusnzula.game_matchpairs.models.BoardSize
 import com.erastusnzula.game_matchpairs.utils.*
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.ktx.storage
@@ -198,6 +199,7 @@ class NewGameActivity : AppCompatActivity() {
 
     private fun saveImagesToFireBase() {
         save.isEnabled = false
+        save.text = "Saving..."
         val name = gameName.text.toString()
         database.collection("Game-match pairs").document(name).get()
             .addOnSuccessListener { document ->
@@ -205,14 +207,16 @@ class NewGameActivity : AppCompatActivity() {
                     val checkNameAlert = AlertDialog.Builder(this)
                     checkNameAlert.setTitle("Name already taken")
                     checkNameAlert.setCancelable(false)
-                    val options = arrayOf("1. Choose another name")
+                    val options = arrayOf("1. Choose another name", "2. Go back to default game")
                     checkNameAlert.setItems(options) { _, which ->
                         when (which) {
                             0 -> {}
+                            1->exitProtocol()
                         }
                     }
 //                        .setPositiveButton("Okay", null)
                     checkNameAlert.show()
+                    save.text = "Save"
                     save.isEnabled = true
                 } else {
                     handleUploadingImages(name)
@@ -223,6 +227,7 @@ class NewGameActivity : AppCompatActivity() {
                     "Error while saving game, please make sure you have an active network connection.",
                     Toast.LENGTH_LONG
                 ).show()
+                save.text="Save"
                 save.isEnabled = true
             }
 
@@ -277,7 +282,7 @@ class NewGameActivity : AppCompatActivity() {
                     val alert = AlertDialog.Builder(this)
                     alert.setTitle("Game uploaded successfully")
                     alert.setCancelable(false)
-                    val options = arrayOf("1. Play game")
+                    val options = arrayOf("1. Play game", "2. Go back to default game")
                     alert.setItems(options) { _, which ->
                         when (which) {
                             0 -> {
@@ -286,6 +291,7 @@ class NewGameActivity : AppCompatActivity() {
                                 setResult(Activity.RESULT_OK, output)
                                 finish()
                             }
+                            1->exitProtocol()
                         }
                     }
 //                    alert.setPositiveButton("Yes") { _, _ ->
@@ -311,6 +317,19 @@ class NewGameActivity : AppCompatActivity() {
         val outputStream = ByteArrayOutputStream()
         bitMapScaler.compress(Bitmap.CompressFormat.JPEG, 60, outputStream)
         return outputStream.toByteArray()
+
+    }
+    private fun exitProtocol(){
+        val alert = MaterialAlertDialogBuilder(this, R.style.ThemeOverlay_MaterialComponents_MaterialAlertDialog_Background)
+        alert.setMessage("Do you want to return to default game? ")
+        alert.setCancelable(false)
+        alert.setNegativeButton("No"){dialog,_->
+            dialog.dismiss()
+        }
+        alert.setPositiveButton("Yes"){_,_->
+            finish()
+        }
+        alert.show()
 
     }
 }
